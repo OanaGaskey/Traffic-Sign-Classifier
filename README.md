@@ -1,5 +1,5 @@
 # Traffic-Sign-Classifier
-Traffic signs recognition using Convolutional Neural Networks.
+Traffic sign recognition algorithm using front facing camera images and classification based on Convolutional Neural Networks.
 
 ![VolvoTrafficSign](images/VolvoTrafficSign.JPG)
 Photo source: [Motornature](http://www.motornature.com/)
@@ -18,7 +18,7 @@ This project is implemented in Python using TensorFlow, the source code can be f
 
 ## Dataset Exploration and Augmentation 
 
-When working with existing labeled data, the first step is to get familiar with how the data looks like, how many classes are used, and how big is the data set.
+When working with existing labeled data, the first step is to get familiar with how the data looks, how many classes are used, and how big is the data set.
 
  
 ![Traffic30Limit](images/Traffic30Limit.JPG)![TrafficSignals](images/TrafficSignals.JPG)![TrafficStraight](images/TrafficStraight.JPG) ![TrafficRightOfWay](images/TrafficRightOfWay.JPG)  
@@ -35,12 +35,12 @@ Splitting the data in three sets is a custom approach when working with neural n
 
 In terms of size, the validation set is a little over a tenth of the training data and the test data is about a third of the training set.
 
-At the begining, I thought that this amount of data would be more than sufficient for my traffic sign classifier to perform well. After I designed and tunned my convolutional neural network I realized that I was not able to get the accuracy above 80%. Because of this, I decided to increase the training data set by rotating each image twice, 10 degrees left respectively 10 degrees right. I found this to be the most important factor that increases the accuracy on the validation data set. 
+At the begining, I thought that this amount of data would be more than sufficient for my traffic sign classifier to perform well. After I designed and tuned my convolutional neural network I realized that I was not able to get the accuracy above 80%. Because of this, I decided to increase the training data set by rotating each image twice, once 10 degrees left and once again 10 degrees right. I found this to be the most important factor that increases the accuracy on the validation data set. 
 
 
 ```
 # Increase the training data set
-# Rotate images 10 degrees right respectively 10 degrees right to add to the train data set
+# Rotate images 10 degrees left and 10 degrees right to add to the train data set
 
 def rotateImage(image, angle):
     image_center = tuple(np.array(image.shape[1::-1]) / 2)
@@ -59,7 +59,7 @@ y_train_rotated_left = y_train
 ![DataAugmentation](images/DataAugmentation.JPG)
 
 
-Part of the data exploration is also to get an idea if the images are equally distributed among classes or not, and to compare the statistics between training, validation and test data sets. As shown in the charts below, the data is not equally distributed and there are classes that are  obviously more represented than others, but the statistics are quite homogenous between the three data sets so I did not compensate for that.
+Part of the data exploration is also to get an idea if the images are equally distributed among classes or not, and to compare the statistics between training, validation and test data sets. As shown in the charts below, the data is not equally distributed and there are classes that are obviously more represented than others, but the statistics are quite homogenous between the three data sets so I did not compensate for that.
 
 
 ![DataStatistics](images/DataStatistics.JPG)
@@ -122,13 +122,13 @@ Below is an image that is initially labeled ‘16’ with its one-hot-encoded ne
 
 Now that the data and labels are processed, it is time to design the CNN. One way would be to start from scratch and add layers as the experimentation goes, but this is time consuming and does not take advantage of the already existing research in the field.
 
-One particular architecture is well suited for the traffic sign classification task. This is [LeNet by Yann LeCun](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf) that was developed in 1998 for letters and digits recognition.
+One particular architecture is well suited for the traffic sign classification task. This is [LeNet by Yann LeCun](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf) that was developed in 1998 for letter and digit recognition.
 
 
 ![LeNet](images/LeNet.JPG) 
 
 
-LeNet is using a deep neural network to embed two convolution layers using 5x5 kernel patches to look for destinct features in the image. The subsampling layers can be implemented as max pooling layers and their role is to only keep the highest detected features for further classification. The fully connected layers are standard and are trained to classify the image considering the 10 final outputs.
+LeNet uses a deep neural network to embed two convolution layers using 5x5 kernel patches to look for destinct features in the image. The subsampling layers can be implemented as max pooling layers and their role is to only keep the highest detected features for further classification. The fully connected layers are standard and are trained to classify the image considering the 10 final outputs.
 
 I am using LeNet as a starting point and working from here to define my own architecture, suitable for the traffic sign classifier. 
 
@@ -141,7 +141,7 @@ The resulting architecture is illustrated below.
 ![Architecture](images/Architecture.JPG) 
 
 
-Before training the above depicted model, I initialized each trainable layer's weights and biases with a normally distributed random values defined by `mu` and `sigma`
+Before training the above depicted model, I initialized each trainable layer's weights and biases with a normally distributed random value defined by `mu` and `sigma`
 
 ```
 # The LeNet algorithm
@@ -156,7 +156,7 @@ def LeNet(x):
     conv1   = tf.nn.conv2d(x, conv1_W, strides=[1, 1, 1, 1], padding='VALID') + conv1_b
 ```
 
-I defined the hypermarameters using 10 training epochs, meaning that the training data is shuffeled and fed into the CNN 10 times, while using a 256 batch size to make the data easier to handle and fit in RAM memory. The learning rate is pretty low as I saw this is a better approach and leads to a higher performance at the end of the 10 epoch training session.
+I defined the hyperparameters using 10 training epochs, meaning that the training data is shuffled and fed into the CNN 10 times, while using a 256 batch size to make the data easier to handle and fit in RAM memory. The learning rate is pretty low as I saw this is a better approach and leads to a higher performance at the end of the 10 epoch training session.
 
 
 ```
@@ -191,11 +191,11 @@ I was content with the performance I got on the validation and test data, so I l
 
 ![NetImages](images/NetImages.JPG)
 
-I cropped the images so that the traffic sign takes up most of the space, I also paid attention that images are square as much as possible since I noticed that resizing them to 32x32 might stretch them out making them harder to be classified. The images are all of front facing traffic signs as I wanted to avoid having to undistort them.  
+I cropped the images so that the traffic sign takes up most of the space, I also made sure that images are square as much as possible since I noticed that resizing them to 32x32 might stretch them out making them harder to be classified. The images are all of front facing traffic signs as I wanted to avoid having to undistort them.  
 
 I reloaded the model I saved at the end of the training and ran the predictions on the newly acquired images. Of course, I also labeled the images and pre-processed them in the same way I did with the originally given data. Below is the output on the web images set.    
 
 ![WebAccuracy](images/WebAccuracy.JPG) 
 
-Only one image is misclassified out of the five I found. I noticed that the simpler forms as triangles, circles and octagons are easily identified while numbers are not. Even if the 50km/h sign is not correctly identified, it is still predicted as a speed limit sign. Looking at the top five softmax values for the predictions of these images, I was surprised to see 100% for both yield and priority. 
+Only one image is misclassified out of the five I found. I noticed that simpler forms like triangles, circles and octagons are easily identified while numbers are not. Even if the 50km/h sign is not correctly identified, it is still predicted as a speed limit sign. Looking at the top five softmax values for the predictions of these images, I was surprised to see 100% for both yield and priority. 
 The 50km/h misclassified sign also has a high confidence of 90.7%, there is definitely room for improvement for number recognition in my model. The lowest percentage is for the stop sign, even though it is correctly classified I think that its shape being close to a circle and having some text inside, makes it a bit more difficult to classify.
