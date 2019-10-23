@@ -10,8 +10,8 @@ Car manufacturers have already introduced this feature for their high end line v
 
 For this project I am going to implement a traffic sign recognition algorithm based on European signalisation. 
 
-In order to _teach_ a car how to recognise signs and classify them correctly, I am going to start with a data set of existing images and a corresponding set of labels. Most of the work is done _offline_ and includes processing the images, designing and training a convolutional neural network. 
-The trained convolutional neural network is then used _online_, meaning that it runs in real time on the car to recognize traffic signs that it sees for the first time.
+In order to _teach_ a car how to recognise signs and classify them correctly, I am going to start with a data set of existing images and a corresponding set of labels. Most of the work is done _offline_ and includes processing the data and designing and training a convolutional neural network. 
+The trained convolutional neural network is then used _online_, meaning that it runs real time on the car to recognize traffic signs that it sees for the first time.
 
 This project is implemented in Python using TensorFlow, the source code can be found in *Traffic_Sign_Classifier.ipynb* file above. The starting code for this project is provided by Udacity and can be found [here](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project)
 
@@ -65,7 +65,7 @@ Part of the data exploration is also to get an idea if the images are equally di
 ![DataStatistics](images/DataStatistics.JPG)
 
 
-## Model Architecture and Design 
+## Data Pre-Processing 
 
 Data pre-processing is a key aspect when designing a model. This makes a big difference on how well the CNN (Convolutional Neural Network) will perform as it is important to decide which features are worth learning. 
 
@@ -118,12 +118,25 @@ Below is an image that is initially labeled ‘16’ with its one-hot-encoded ne
 ![OneHotEncoding](images/OneHotEncoding.JPG) 
 
 
+
+## Model Architecture and Design 
+
 Now that the data and labels are processed, it is time to design the CNN. One way would be to start from scratch and add layers as the experimentation goes, but this is time consuming and does not take advantage of the already existing research in the field.
 
 One particular architecture is well suited for the traffic sign classification task. This is [LeNet by Yann LeCun](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf) that was developed in 1998 for letters and digits recognition.
 
+
 ![LeNet](images/LeNet.JPG) 
 
+
+LeNet is using a deep neural network to embed two convolution layers using 5x5 kernel patches to look for destinct features in the image. The subsampling layers can be implemented as max pooling layers and their role is to only keep the highest detected features for further classification. The fully connected layers are standard and are trained to classify the image considering the 10 final outputs.
+
+I am using LeNet as a starting point and working from here to define my own architecture, suitable for the traffic sign classifier. 
+
+The first change required is the number of outputs, which is obviously 43 for my classifier. The input size is 32X32 which nicely matches my pictures. Otherwise I would have changed the input size or pre-processed my images to be 32X32.
+I added 4 additional RELU layers to allow for non linearity and observed that this helped improve my performance on the validation set. The last touch was to add 2 drop-out layers that I needed to avoid over fitting my network to the training data.
+
+The resulting architecture is presented in the table below.
 
 
 ![Architecture](images/Architecture.JPG) 
