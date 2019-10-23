@@ -118,7 +118,6 @@ Below is an image that is initially labeled ‘16’ with its one-hot-encoded ne
 ![OneHotEncoding](images/OneHotEncoding.JPG) 
 
 
-
 ## Model Architecture and Design 
 
 Now that the data and labels are processed, it is time to design the CNN. One way would be to start from scratch and add layers as the experimentation goes, but this is time consuming and does not take advantage of the already existing research in the field.
@@ -134,9 +133,69 @@ LeNet is using a deep neural network to embed two convolution layers using 5x5 k
 I am using LeNet as a starting point and working from here to define my own architecture, suitable for the traffic sign classifier. 
 
 The first change required is the number of outputs, which is obviously 43 for my classifier. The input size is 32X32 which nicely matches my pictures. Otherwise I would have changed the input size or pre-processed my images to be 32X32.
-I added 4 additional RELU layers to allow for non linearity and observed that this helped improve my performance on the validation set. The last touch was to add 2 drop-out layers that I needed to avoid over fitting my network to the training data.
+I added 4 additional RELU layers to allow for non linearity and observed that this helped improve my performance on the validation set. The last touch was to add 2 drop-out layers with a 75% keep probability that I needed to avoid over fitting my network to the training data.
 
-The resulting architecture is presented in the table below.
+The resulting architecture is illustrated below.
 
 
 ![Architecture](images/Architecture.JPG) 
+
+
+Before training the above depicted model, I initialized each trainable layer's weights and biases with a normally distributed random values defined by `mu` and `sigma`
+
+```
+# The LeNet algorithm
+def LeNet(x):    
+    # Arguments used for tf.truncated_normal, randomly defines variables for the weights and biases for each layer
+    mu = 0
+    sigma = 0.1
+    
+    # Convolutional. Input = 32x32x1. Output = 28x28x6.
+    conv1_W = tf.Variable(tf.truncated_normal(shape=(5, 5, 1, 6), mean = mu, stddev = sigma))
+    conv1_b = tf.Variable(tf.zeros(6))
+    conv1   = tf.nn.conv2d(x, conv1_W, strides=[1, 1, 1, 1], padding='VALID') + conv1_b
+```
+
+I defined the hypermarameters using 10 training epochs, meaning that the training data is shuffeled and fed into the CNN 10 times, while using a 256 batch size to make the data easier to handle and fit in RAM memory. The learning rate is pretty low as I saw this is a better approach and leads to a higher performance at the end of the 10 epoch training session.
+
+
+```
+# Hyperparameters
+EPOCHS = 10
+BATCH_SIZE = 256
+rate = 0.001
+```
+
+And finally I defined the softmax cross entropy error function to be reduced by the Adam optimizer.
+
+```
+logits = LeNet(x)
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits)
+loss_operation = tf.reduce_mean(cross_entropy)
+optimizer = tf.train.AdamOptimizer(learning_rate = rate)
+training_operation = optimizer.minimize(loss_operation)
+```
+
+With the architecture and the hyperparameters that were described above, the training went well and I got a 94.5% accuracy on the validation set.
+
+![Training](images/Training.JPG) 
+
+When running the model on the test data the accuracy is 92.3% The performance on the test data was evaluated at the very end, after having arrived at the final version of my model’s architecture.  
+
+![TestDataAccuracy](images/TestDataAccuracy.JPG)
+
+
+## Test a Model on New Images
+
+I was content with the performance I got on the validation and test data, so I looked up some European traffic signs to see how well my model performs. Here are the five images I chose:  
+
+![NetImages](images/NetImages.JPG)
+
+I cropped the images so that the traffic sign takes up most of the space, I also paid attention that images are square as much as possible since I noticed that resizing them to 32x32 might stretch them out making them harder to be classified. The images are all of front facing traffic signs as I wanted to avoid having to undistort them.  
+
+I reloaded the model I saved at the end of the training and ran the predictions on the newly acquired images. Of course, I also labeled the images and pre-processed them in the same way I did with the originally given data. Below is the output on the web images set.    
+
+![WebAccuracy](images/WebAccuracy.JPG) 
+
+Only one image is misclassified out of the five I found. I noticed that the simpler forms as triangles, circles and octagons are easily identified while numbers are not. Even if the 50km/h sign is not correctly identified, it is still predicted as a speed limit sign. Looking at the top five softmax values for the predictions of these images, I was surprised to see 100% for both yield and priority. 
+The 50km/h misclassified sign also has a high confidence of 90.7%, there is definitely room for improvement for number recognition in my model. The lowest percentage is for the stop sign, even though it is correctly classified I think that its shape being close to a circle and having some text inside, makes it a bit more difficult to classify.
