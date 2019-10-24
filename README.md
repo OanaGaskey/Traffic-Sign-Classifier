@@ -199,3 +199,5 @@ I reloaded the model I saved at the end of the training and ran the predictions 
 
 Only one image is misclassified out of the five I found. I noticed that simpler forms like triangles, circles and octagons are easily identified while numbers are not. Even if the 50km/h sign is not correctly identified, it is still predicted as a speed limit sign. Looking at the top five softmax values for the predictions of these images, I was surprised to see 100% for both yield and priority. 
 The 50km/h misclassified sign also has a high confidence of 90.7%, there is definitely room for improvement for number recognition in my model. The lowest percentage is for the stop sign, even though it is correctly classified I think that its shape being close to a circle and having some text inside, makes it a bit more difficult to classify.
+
+![Predictions](images/Predictions.JPG)
